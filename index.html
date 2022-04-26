@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WS Chats</title>
+</head>
+
+<body>
+    <h1>Chats</h1>
+    <input type="text" id="message" />
+    <small>hit enter to send. <span style="color: green;" id="color">You <span id="username"></span></span></small>
+    <hr>
+    <div id="chats"></div>
+
+    <script src="./autobahn-browser/autobahn.min.js"></script>
+    <script>
+        // try {
+        //     // for Node.js
+        //     var autobahn = require('autobahn');
+        // } catch (e) {
+        //     // for browsers (where AutobahnJS is available globally)
+        // }
+
+        var connection = new autobahn.Connection({ url: 'ws://127.0.0.1:9090/', realm: 'realm1' });
+        const topic = 'com.myapp.hello'
+        let username = 'user-' + Math.floor(Math.random() * 100)
+
+        connection.onopen = function (session) {
+
+            // 1) subscribe to a topic
+            function onevent(args) {
+                write(args[0], args[1], args[0] === session.id)
+            }
+            session.subscribe(topic, onevent)
+
+            // 2) publish an event
+            username = ""+session.id
+            document.getElementById("username").innerText = `(${username})`
+            document.getElementById("color").style.color = stringToColour(username)
+
+            write(session.id, 'JOINED.', true);
+            session.publish(topic, [session.id, 'JOINED.']); // 2nd param must be array
+
+            // 3) register a procedure for remoting
+            // function add2(args) {
+            //     return args[0] + args[1];
+            // }
+            // session.register('com.myapp.add2', add2)
+
+            // 4) call a remote procedure
+            // session.call('com.myapp.add2', [2, 3]).then(
+            //     function (res) {
+            //         console.log("Result:", res);
+            //     }
+            // );
+        };
+
+        connection.onclose = function (session) {
+            console.log('connection closed.');
+        }
+        connection.open();
+
+        function say(topic, text) {
+            connection.session.publish(topic, [connection.session.id, text]);
+            write(connection.session.id, text, true);
+        }
+
+        function write(user, message, isMe) {
+            const chats = document.getElementById('chats')
+            const chat = `<span style="color: ${stringToColour(""+user)}">${user}</span> : ${message}`
+            chats.innerHTML = `${chat}<br>${chats.innerHTML}`
+        }
+        var input = document.getElementById("message");
+        input.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault()
+                say(topic, input.value)
+                input.value = ''
+            }
+        })
+
+        var stringToColour = function (str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var colour = '#';
+            for (var i = 0; i < 3; i++) {
+                var value = (hash >> (i * 8)) & 0xFF;
+                colour += ('00' + value.toString(16)).substr(-2);
+            }
+            return colour;
+        }
+    </script>
+
+</body>
+
+</html>
