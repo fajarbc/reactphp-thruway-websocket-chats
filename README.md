@@ -10,7 +10,7 @@ composer update
 ```
 
 ## Run
-1. WebSocket Server
+1. WebSocket Server (keep it running)
    ```bash
    php ws-router.php
    ```
