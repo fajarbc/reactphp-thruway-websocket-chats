@@ -1,7 +1,7 @@
 # reactphp-thruway-websocket-chats
 
 ## Description
-Example **ReactPHP** Project : **Websocket Chats**. With the help of **Thruway** PHP Client and Router Library for **Autobahn** (use authobahn-browser) and WAMP (Web Application Messaging Protocol) for Real-Time Application Messaging.
+Example **ReactPHP** Project : **Websocket Chats**. With the help of **Thruway** as PHP Router Library for **Autobahn** (use autobahn-browser as a client) Real-Time Application Messaging.
 
 ## Install
 After clone and `cd` to this project. Install composer dependency
